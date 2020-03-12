@@ -1,12 +1,6 @@
 # Snapshotalyzer
 Python application that manages AWS EC2 snapshots
 
-# Python Course - Find close meteor sites
-
-This is a simple project done during the Python Course.
-
-It finds the meteor sites close to a given position
-
 # Requirements
 
 This project uses [pipenv](https://opensource.com/article/18/2/why-python-devs-should-use-pipenv), so you need it to be installed in your sistem:
