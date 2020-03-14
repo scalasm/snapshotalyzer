@@ -16,7 +16,7 @@ pipenv install -d pylint
 
 ```
 pipenv install
-pipenv run python "shotty/shotty.py"
+pipenv run python shotty/shotty.py
 ```
 
 # Pipenv hints
