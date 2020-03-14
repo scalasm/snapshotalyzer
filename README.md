@@ -55,7 +55,10 @@ pipenv run python shotty/shotty.py start --project="Python Course"
 
 # Pipenv hints
 
-See the [official docs](https://packaging.python.org/tutorials/managing-dependencies/) first and foremost!
+* See the [official docs](https://packaging.python.org/tutorials/managing-dependencies/) first and foremost!
+* [Why Python devs should use Pipenv](https://opensource.com/article/18/2/why-python-devs-should-use-pipenv)
+* [Click website](https://click.palletsprojects.com/)
+* [Boto3 documentation](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html)
 
 ## Run the shell to get the exact environment:
 ```
