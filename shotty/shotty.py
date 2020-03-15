@@ -14,9 +14,25 @@ def get_instances(project):
         instances = ec2.instances.all()
     return instances
 
+# Main comman group: under it we create sub-groups with specific commands
 @click.group()
+def cli():
+    """Shotty manages snapshots"""
+
+# Subgroup for instances commands
+@cli.group('instances')
 def instances():
     """Commands for instances"""
+
+# Subgroup for volumes commands
+@cli.group('volumes')
+def volumes():
+    """Commands for volumes"""
+
+# Subgroup for snapshots commands
+@cli.group('snapshots')
+def snapshots():
+    """Commands for snapshots"""
 
 @instances.command('list')
 @click.option( '--project', default=None, 
@@ -60,5 +76,59 @@ def start_instances(project):
         print( "Starting {0} ...".format(i.id) )
         i.start()
 
+@instances.command('snapshot')
+@click.option( '--project', default=None, 
+    help="Only instances for project (tag Project:<NAME>" )
+def snapshot_instances(project):
+    "Create a snapshot of EC2 instances"
+
+    for i in get_instances(project):
+        for v in i.volumes.all():
+#            print( "Stopping {0} ...".format(i.id) )
+#            i.stop()
+            print("Creating a snapshot of {0}".format(v.id))
+            v.create_snapshot(Description="Created by Snapshotalyzer")
+
+
+@volumes.command('list')
+@click.option( '--project', default=None, 
+    help="Only instances for project (tag Project:<NAME>" )
+def list_volumes(project):
+    "List all volumes and associated EC2 instances"
+
+    # See https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html#instance for more info
+    for i in get_instances(project):
+        for v in i.volumes.all():
+            print( ", ".join( ( 
+                v.id,
+                i.id,
+                v.state,
+                str(v.size)+ "GiB",
+                v.encrypted and "Encrypted" or "Not encrypted"
+            ) ))
+    return
+
+@snapshots.command('list')
+@click.option( '--project', default=None, 
+    help="Only instances for project (tag Project:<NAME>" )
+def list_snapshots(project):
+    "List all snapshots for EC2 volumes"
+
+    # See https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html#instance for more info
+    for i in get_instances(project):
+        for v in i.volumes.all():
+            for s in v.snapshots.all():
+                print( ", ".join( (
+                    s.id, 
+                    v.id,
+                    i.id,
+                    s.start_time.strftime("%c"),
+                    s.state,
+                    s.progress,
+                    str(s.volume_size)+ "GiB",
+                    s.encrypted and "Encrypted" or "Not encrypted",
+                ) ))
+    return
+
 if __name__ == "__main__":
-    instances()
+    cli()

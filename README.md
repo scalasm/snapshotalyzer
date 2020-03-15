@@ -53,6 +53,10 @@ pipenv run python shotty/shotty.py stop --project="Python Course"
 pipenv run python shotty/shotty.py start --project="Python Course"
 ```
 
+```
+pipenv run python shotty/shotty.py snapshots list
+```
+
 # Pipenv hints
 
 * See the [official docs](https://packaging.python.org/tutorials/managing-dependencies/) first and foremost!
