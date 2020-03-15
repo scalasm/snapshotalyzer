@@ -1,4 +1,5 @@
 import boto3
+import botocore
 import click
 
 session = boto3.Session(profile_name='shotty')
@@ -64,7 +65,12 @@ def stop_instances(project):
 
     for i in get_instances(project):
         print( "Stopping {0} ...".format(i.id) )
-        i.stop()
+        # Let's try stopping it but go on if any error occurs 
+        try:
+            i.stop()
+        except botocore.exceptions.ClientError as e:
+            print( "Could not stop {0}: ".format(i.id) + str(e) )
+            continue
 
 @instances.command('start')
 @click.option( '--project', default=None, 
@@ -74,7 +80,12 @@ def start_instances(project):
 
     for i in get_instances(project):
         print( "Starting {0} ...".format(i.id) )
-        i.start()
+        # Let's try starting it but go on if any error occurs 
+        try:
+            i.start()
+        except botocore.exceptions.ClientError as e:
+            print( "Could not start {0}: ".format(i.id) + str(e) )
+            continue
 
 @instances.command('snapshot')
 @click.option( '--project', default=None, 
