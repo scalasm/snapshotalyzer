@@ -84,11 +84,14 @@ def snapshot_instances(project):
 
     for i in get_instances(project):
         for v in i.volumes.all():
-#            print( "Stopping {0} ...".format(i.id) )
-#            i.stop()
+            print( "Stopping {0} ...".format(i.id) )
+            i.stop()
+            i.wait_until_stopped()
             print("Creating a snapshot of {0}".format(v.id))
             v.create_snapshot(Description="Created by Snapshotalyzer")
-
+            print( "Restarting {0} ...".format(i.id) )
+            i.start()
+            i.wait_until_running()
 
 @volumes.command('list')
 @click.option( '--project', default=None, 
