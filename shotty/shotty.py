@@ -15,6 +15,11 @@ def get_instances(project):
         instances = ec2.instances.all()
     return instances
 
+def has_pending_snapshot(volume):
+    """Checks if the there already a pending snapshot for the given volume"""
+    snapshots = list(volume.snapshots.all())
+    return snapshots and snapshots[0].state == 'pending'
+
 # Main comman group: under it we create sub-groups with specific commands
 @click.group()
 def cli():
@@ -94,15 +99,21 @@ def snapshot_instances(project):
     "Create a snapshot of EC2 instances"
 
     for i in get_instances(project):
+        print( "Stopping {0} ...".format(i.id) )
+        i.stop()
+        i.wait_until_stopped()
+        
         for v in i.volumes.all():
-            print( "Stopping {0} ...".format(i.id) )
-            i.stop()
-            i.wait_until_stopped()
+            if has_pending_snapshot(v):
+                print("Skipping {0} because it has already a snapshot in progress ...".format(v.id) )
+                break
             print("Creating a snapshot of {0}".format(v.id))
             v.create_snapshot(Description="Created by Snapshotalyzer")
-            print( "Restarting {0} ...".format(i.id) )
-            i.start()
-            i.wait_until_running()
+
+        print( "Restarting {0} ...".format(i.id) )
+        i.start()
+        i.wait_until_running()
+    return
 
 @volumes.command('list')
 @click.option( '--project', default=None, 
@@ -143,6 +154,32 @@ def list_snapshots(project):
                     s.encrypted and "Encrypted" or "Not encrypted",
                 ) ))
     return
+
+@snapshots.command('delete')
+@click.option( '--project', default=None, 
+    help="Only instances for project (tag Project:<NAME>" )
+def delete_snapshots(project):
+    "Delete all snapshots for EC2 volumes"
+
+    # See https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html#instance for more info
+    for i in get_instances(project):
+        for v in i.volumes.all():
+            for s in v.snapshots.all():
+                print( ", ".join( (
+                    s.id, 
+                    v.id,
+                    i.id,
+                    s.start_time.strftime("%c"),
+                    s.state,
+                    s.progress,
+                    str(s.volume_size)+ "GiB",
+                    s.encrypted and "Encrypted" or "Not encrypted",
+                ) ))
+                print( " --> Deleting it!" )
+                s.delete()
+    return
+
+
 
 if __name__ == "__main__":
     cli()
